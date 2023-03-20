@@ -94,6 +94,12 @@ func DeleteBookById(ctx *gin.Context) {
 	bookId := ctx.Param("bookId")
 	book := models.Book{}
 
+	var bookWhereId models.Book
+	if err := db.Where("id = ?", bookId).First(&bookWhereId).Error; err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Data not found!"})
+		return
+	}
+
 	err := db.Where("id = ?", bookId).Delete(&book).Error
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
