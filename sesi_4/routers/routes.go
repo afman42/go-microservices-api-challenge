@@ -1,9 +1,10 @@
 package routers
 
 import (
+	"sesi_4_project/controllers"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"sesi_4_project/controllers"
 )
 
 func LoadRoutes(db *gorm.DB) *gin.Engine {
@@ -12,11 +13,11 @@ func LoadRoutes(db *gorm.DB) *gin.Engine {
 		c.Set("db", db)
 	})
 
-	r.GET("/books", controllers.AllBooks)
-	r.GET("/books/:bookId", controllers.GetByBookId)
-	r.POST("/books", controllers.CreateBook)
-	r.PUT("/books/:bookId", controllers.UpdateBookById)
-	r.DELETE("/books/:bookId", controllers.DeleteBookById)
+	r.GET("/book", controllers.AllBooks)
+	r.GET("/book/:bookId", controllers.GetByBookId)
+	r.POST("/book", controllers.CreateBook)
+	r.PUT("/book/:bookId", controllers.UpdateBookById)
+	r.DELETE("/book/:bookId", controllers.DeleteBookById)
 
 	return r
 }
