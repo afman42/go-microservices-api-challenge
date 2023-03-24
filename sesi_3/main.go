@@ -3,8 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"sesi_3_challenge/routers"
+
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 	port     = 5432
 	user     = "postgres"
 	password = "afif123"
-	dbname   = "simple-api-go2"
+	dbname   = "simple-api-go3"
 )
 
 func main() {

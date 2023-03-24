@@ -3,9 +3,10 @@ package controllers
 import (
 	"database/sql"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"sesi_3_challenge/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateOrUpdateBookInput struct {
@@ -22,7 +23,8 @@ func AllBooks(ctx *gin.Context) {
 	rows, err := ctx.MustGet("db").(*sql.DB).Query(sqlStatement)
 
 	if err != nil {
-		panic(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	defer rows.Close()
@@ -33,10 +35,16 @@ func AllBooks(ctx *gin.Context) {
 		err = rows.Scan(&book.ID, &book.Title, &book.Author, &book.Description)
 
 		if err != nil {
-			panic(err)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 
 		results = append(results, book)
+	}
+
+	if err = rows.Err(); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	ctx.JSON(http.StatusOK, results)
 }
@@ -66,7 +74,7 @@ func CreateBook(ctx *gin.Context) {
 	var db = ctx.MustGet("db").(*sql.DB)
 
 	if err := ctx.ShouldBindJSON(&newBook); err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 	sqlStatement := `
@@ -78,7 +86,7 @@ func CreateBook(ctx *gin.Context) {
 		Scan(&book.ID, &book.Title, &book.Author, &book.Description)
 
 	if err != nil {
-		fmt.Println("Error creating book data:", err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, book)
@@ -110,7 +118,7 @@ func UpdateBook(ctx *gin.Context) {
 
 	var input CreateOrUpdateBookInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	book.ID = bookID
@@ -120,16 +128,19 @@ func UpdateBook(ctx *gin.Context) {
 
 	res, err := db.Exec(sqlStatement, book.ID, book.Title, book.Author, book.Description)
 	if err != nil {
-		panic(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	_, err = res.RowsAffected()
+	count, err := res.RowsAffected()
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, book)
+	if count > 0 {
+		ctx.JSON(http.StatusOK, book)
+	}
 }
 
 func DeleteBook(ctx *gin.Context) {
@@ -156,7 +167,8 @@ func DeleteBook(ctx *gin.Context) {
 	`
 	res, err := db.Exec(sqlStatement, bookID)
 	if err != nil {
-		panic(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
 	}
 
 	_, err = res.RowsAffected()

@@ -2,8 +2,9 @@ package routers
 
 import (
 	"database/sql"
-	"github.com/gin-gonic/gin"
 	"sesi_3_challenge/controllers"
+
+	"github.com/gin-gonic/gin"
 )
 
 func StartServer(db *sql.DB) *gin.Engine {
@@ -12,9 +13,9 @@ func StartServer(db *sql.DB) *gin.Engine {
 	router.Use(func(c *gin.Context) {
 		c.Set("db", db)
 	})
-	router.GET("/books", controllers.AllBooks)
+	router.GET("/book", controllers.AllBooks)
 	router.GET("/book/:bookID", controllers.GetBook)
-	router.POST("/book/add", controllers.CreateBook)
+	router.POST("/book", controllers.CreateBook)
 	router.PUT("/book/:bookID", controllers.UpdateBook)
 	router.DELETE("/book/:bookID", controllers.DeleteBook)
 
